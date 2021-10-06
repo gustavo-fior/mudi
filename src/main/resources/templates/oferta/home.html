@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="pt-br">
+<!-- Usa o tio para pegar o template -->
+<!-- nome do arquivo :: nome do fragmento -->
+<head th:replace="~{base :: head}">
+</head>
+
+<!-- Quando terminar de carregar o body, ocorre a invocação dessa function -->
+<body onload="onLoad()">
+
+	<div th:replace="~{base :: logo}"></div>
+
+	<!-- Envelopar tudo com essa classe para ter um padding-->
+	<!-- Colocamos um id para linkar com uma function do vue.js-->
+	<div class="container" id="ofertas">
+
+		<div th:replace="~{base :: titulo-jumbotron('Ofertas')}"></div>
+
+		<!-- div de um pedido -->
+		<!-- fazendo um foreach agora no Vue.js -->
+		<div class="card mb-3" v-for="pedido in pedidos">
+
+			<!-- Vue.js buscando o texto -->
+			<div class="card-header alert-dark">{{pedido.nomeProduto}}</div>
+
+
+			<div class="card-body">
+
+				<div class="row">
+
+					<div class="col-12 col-sm-8 mb-3">
+
+
+						<div class="mt-3 mb-3">Produto:</div>
+						<div class="mb-3">
+							<!-- Colocando o href como a url do Produto e o nome do Produto para aparecer -->
+							<a class="mb-3" v-bind:href="pedido.urlDoProduto">{{pedido.nomeProduto}}</a>
+						</div>
+
+						<div>Descricao</div>
+						<div>
+							<!-- Para o usuario nao ter acesso a esse campo usamos o disabled -->
+							<textarea disabled="disabled" class="form-control">{{pedido.descricao}}</textarea>
+						</div>
+						<div class="row mt-3">
+							<!-- Linkando (bind) os inputs com as propriedades do pedido via Vue.js -->
+							<div class="col-md-5">
+								Valor: 
+								<!-- Com o v-bind:class voce pode adicionar uma classe caso o valor de algo seja verdadeiro -->
+								<!-- Caso o valor do erros do pedido esteja nao esteja vazio, a classe is-invalid eh adicionada -->
+								<input v-bind:class="{'is-invalid' : pedido.erros.valor!==''}" class="form-control" v-model="pedido.valorNegociado" />
+								
+								<!-- Div de erros de validacao -->
+								<!-- Se a propriedade do pedido estiver preenchida essa div eh renderizada -->
+								<div class="invalid-feedback" v-if="pedido.erros.valor">
+									{{pedido.erros.valor}}
+								</div>
+								
+							</div>
+								
+							<div class="col-md-7">
+								Data da Entrega: 
+								<input v-bind:class="{'is-invalid' : pedido.erros.dataEntrega!==''}" class="form-control" v-model="pedido.dataEntrega" />
+								
+								<!-- Div de erros de validacao -->
+								<!-- Se a propriedade do pedido estiver preenchida essa div eh renderizada -->
+								<div class="invalid-feedback" v-if="pedido.erros.dataEntrega">
+									{{pedido.erros.dataEntrega}}
+								</div>
+								
+							</div>
+						</div>
+						<div>
+							<label>Comentário (opcional)</label>
+							<!-- Para o usuario nao ter acesso a esse campo usamos o disabled -->
+							<textarea v-model="pedido.comentario" class="form-control"></textarea>
+						</div>
+
+						<!-- v-if e v-else eh o if e else do vue.js -->
+						<button v-if="pedido.ofertaEnviada" class="btn btn-success mt-3">Oferta
+							enviada!</button>
+						<!-- v-on:click invoca um metodo js quando ocorre o click (esta fazendo o papel do submit) -->
+						<button v-else v-on:click="enviarOferta(pedido)"
+							class="btn btn-primary mt-3">Cadastrar</button>
+					</div>
+
+					<div class="col-12 col-sm-4">
+						<div>
+							<!-- colocando a src vinda dos dados do Vue.js (v-bind para controlar atributos de tags pelo Vue.js) -->
+							<img class="img-thumbnail" v-bind:src="pedido.urlDaImagem" />
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- Area de Script com Vue.js -->
+	
+	<script type="text/javascript">
+		// Aqui temos uma funcao do Vue
+		// Tudo que estiver dentro do `data` pode ser acessado do HTML
+
+		function onLoad() {
+			var app = new Vue(
+					{
+						el : '#ofertas',
+						data : {
+							pedidos : []
+						}, 
+						mounted() { // Essa funcao eh chamada logo apos o vue.js renderizar o HTML
+							axios
+								.get('http://localhost:8080/api/pedidos/aguardando')
+								.then(response => {
+									// Fazendo um foreach no array que recebemos da nossa API e criando um atributo novo
+									// para manipular a mudanca de botoes
+										response.data.forEach(pedido => {
+											// Aqui criando o atributo boolean ofertaEnviada
+											pedido.ofertaEnviada = false;
+											pedido.erros = {
+												valor: '',
+												dataEntrega: ''
+											}
+										})
+										this.pedidos = response.data
+								})
+						},
+						methods: { // Area para criar nossos metodos proprios
+							enviarOferta: function(pedido) {
+								
+								// Antes de fazermos o POST, limpamos os erros de validacao
+								pedido.erros = {
+										valor: '',
+										dataEntrega: ''
+								};
+								
+								// no .post nos passamos um objeto com os atributos que cairam na requisicao de nova oferta 
+								// e se o usuario erra algum campo a validacao ira acusar e o axios retornara um JSON com o conteudo
+								// dos erros
+								axios
+									.post('http://localhost:8080/api/ofertas', {
+										pedidoId: pedido.id,
+										valor: pedido.valorNegociado,
+										dataEntrega: pedido.dataEntrega,
+										comentario: pedido.comentario
+									})
+									// Aqui o boolean para mudar o botao
+									.then(response => pedido.ofertaEnviada = true)
+									// Aqui esta o tratamento de possiveis erros
+									// errors.data eh uma propriedade do JSON retornado pelo AXIOS,
+									// estamos percorrendo ela e atribuindo o valor da defaultMessage para
+									// cada atributo erros com o nome igual o do campo (error.field)
+									.catch(error => {
+										error.response.data.errors.forEach(error => {
+											pedido.erros[error.field] = error.defaultMessage;
+										})
+									})
+							}
+						}
+					});
+		}
+	</script>
+	 
+	<!-- Importando o Vue.js para desenvolvedor -->
+	<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+	<!-- Importano o AXIOS (cliente HTTP para consumo de APIs -->
+	<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+</body>
+</html>

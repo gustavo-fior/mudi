@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="pt-br">
+<!-- Usa o tio para pegar o template -->
+<!-- nome do arquivo :: nome do fragmento -->
+<head th:replace="~{base :: head}">
+</head>
+
+<body>
+
+	<div th:replace="~{base :: logo}"></div>
+
+	<!-- Envelopar tudo com essa classe para ter um padding-->
+	<div class="container">
+
+		<div th:replace="~{base :: titulo-jumbotron('Login')}"></div>
+
+
+		<div class="card mb-3">
+		
+
+			<!-- Formulário de login -->
+			<!-- A acção do ThymeLeaf -->
+			<form th:action="@{/login}" class="card-body" method="post">
+
+				<div class="form-group">
+					<label for="username">Usuário</label>
+					<input class="form-control" placeholder="usuário" name="username">
+				</div>
+				
+				<div class="form-group">
+					<label for="password">Senha</label> 
+					<input type="password" name="password" class="form-control" placeholder="senha">
+				</div>
+				
+				<button class="btn btn-primary" type="submit">Login</button>
+
+			</form>
+
+		</div>
+	</div>
+</body>
+</html>

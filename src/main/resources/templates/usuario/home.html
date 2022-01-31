@@ -17,7 +17,7 @@
 		<nav
 			class="navbar navbar-expand navbar-light bg-light d-flex justify-content-between mb-3">
 			<div class="navbar-nav">
-			<!-- Usando o th:href para caso a aplicação mude de contexto -->
+			<!-- Usando o th:href para caso a aplicaÃ§Ã£o mude de contexto -->
 				<a th:classappend="${status} == null ? 'active'" class="nav-link" th:href="@{/usuario/pedido}">Todos</a> 
 				<a th:classappend="${status} == 'aguardando' ? 'active'" class="nav-link" th:href="@{/usuario/pedido/aguardando}">Aguardando</a> 
 				<a th:classappend="${status} == 'aprovado' ? 'active'" class="nav-link" th:href="@{/usuario/pedido/aprovado}">Aprovado</a>
@@ -34,7 +34,7 @@
 		<div class="card mb-3" th:each="pedido : ${pedidos}">
 
 			<!-- Bloco de comando do thymeleaf com um SWITCH dentro -->
-			<th:blobk th:switch="${pedido.status.name()}">
+			<th:block th:switch="${pedido.status.name()}">
 
 				<div th:case="'AGUARDANDO'" class="card-header alert-warning" th:text="${pedido.nomeProduto}">Nome do Produto</div>
 				<div th:case="'APROVADO'" class="card-header alert-success" th:text="${pedido.nomeProduto}">Nome do Produto</div>
@@ -49,14 +49,14 @@
 					<div class="col-12 col-sm-8 mb-3">
 						<div class="row">
 							<div class="col-md-5">
-							<!-- Usando utitilitários (#numbers.formatCurrency(num)) do Thymeleaf para conversão para reais usando a localização do navegador -->
-							<!-- Alteranmos para formatar apenas o número com pontos a cada 3 números e 2 casas decimais com vírgula -->
-							<!-- Também fizemos uma validação caso o valor seja null -->
+							<!-- Usando utitilitÃ¡rios (#numbers.formatCurrency(num)) do Thymeleaf para conversÃ£o para reais usando a localizaÃ§Ã£o do navegador -->
+							<!-- Alteranmos para formatar apenas o nÃºmero com pontos a cada 3 nÃºmeros e 2 casas decimais com vÃ­rgula -->
+							<!-- TambÃ©m fizemos uma validaÃ§Ã£o caso o valor seja null -->
 								Valor:  <span th:if="${pedido.valorNegociado != null}" th:text="${'R$ ' + #numbers.formatDecimal(pedido.valorNegociado, 3, 'POINT', 2, 'COMMA')}">R$
 									2999.99</span>
 							</div>
 							<div class="col-md-7">
-							<!-- Nessa conversão -->
+							<!-- Nessa conversÃ£o -->
 								Data da Entrega: <span th:if="${pedido.dataEntrega != null}" th:text="${#temporals.format(pedido.dataEntrega,'dd/MM/yyyy')}">10/01/2002</span>
 							</div>
 						</div>
